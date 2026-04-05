@@ -42,18 +42,30 @@ def clamp(value):
     return min(max(value, 0), 1)
 
 
+def lookup_pen_color(pen_color_value, explicit_color_rgba):
+    if explicit_color_rgba is not None:
+        return explicit_color_rgba
+    if pen_color_value in RM_PALETTE:
+        color = RM_PALETTE[pen_color_value]
+    else:
+        _logger.warning("Unknown pen color: %s", pen_color_value)
+        color = RM_PALETTE[PenColor.BLACK]
+    if len(color) == 3:
+        return (*color, 255)
+    else:
+        return color
+
+
 class Pen:
-    def __init__(self, name, base_width, base_color_id):
+    def __init__(self, name, base_width, base_color):
         self.base_width = base_width
-        self.base_color = RM_PALETTE[base_color_id]
+        self.base_color = base_color  # rgba
         self.name = name
         self.segment_length = 1000
         self.base_opacity = 1
         # initial stroke values
         self.stroke_linecap = "round"
         self.stroke_opacity = 1
-        self.stroke_width = base_width
-        self.stroke_color = base_color_id
 
     # note that the units of the points have had their units converted
     # in scene_stream.py
@@ -75,7 +87,7 @@ class Pen:
         return self.base_width
 
     def get_segment_color(self, speed, direction, width, pressure, last_width):
-        return "rgb" + str(tuple(self.base_color))
+        return "rgba" + str(tuple(self.base_color))
 
     def get_segment_opacity(self, speed, direction, width, pressure, last_width):
         return self.base_opacity
@@ -122,13 +134,13 @@ class Pen:
 
 
 class Fineliner(Pen):
-    def __init__(self, base_width, base_color_id):
-        super().__init__("Fineliner", base_width * 1.8, base_color_id)
+    def __init__(self, base_width, base_color):
+        super().__init__("Fineliner", base_width * 1.8, base_color)
 
 
 class Ballpoint(Pen):
-    def __init__(self, base_width, base_color_id):
-        super().__init__("Ballpoint", base_width, base_color_id)
+    def __init__(self, base_width, base_color):
+        super().__init__("Ballpoint", base_width, base_color)
         self.segment_length = 5
 
     def get_segment_width(self, speed, direction, width, pressure, last_width):
@@ -151,8 +163,8 @@ class Ballpoint(Pen):
 
 
 class Marker(Pen):
-    def __init__(self, base_width, base_color_id):
-        super().__init__("Marker", base_width, base_color_id)
+    def __init__(self, base_width, base_color):
+        super().__init__("Marker", base_width, base_color)
         self.segment_length = 3
 
     def get_segment_width(self, speed, direction, width, pressure, last_width):
@@ -161,8 +173,8 @@ class Marker(Pen):
 
 
 class Pencil(Pen):
-    def __init__(self, base_width, base_color_id):
-        super().__init__("Pencil", base_width, base_color_id)
+    def __init__(self, base_width, base_color):
+        super().__init__("Pencil", base_width, base_color)
         self.segment_length = 2
 
     def get_segment_width(self, speed, direction, width, pressure, last_width):
@@ -180,14 +192,14 @@ class Pencil(Pen):
 
 
 class MechanicalPencil(Pen):
-    def __init__(self, base_width, base_color_id):
-        super().__init__("Mechanical Pencil", base_width ** 2, base_color_id)
+    def __init__(self, base_width, base_color):
+        super().__init__("Mechanical Pencil", base_width ** 2, base_color)
         self.base_opacity = 0.7
 
 
 class Brush(Pen):
-    def __init__(self, base_width, base_color_id):
-        super().__init__("Brush", base_width, base_color_id)
+    def __init__(self, base_width, base_color):
+        super().__init__("Brush", base_width, base_color)
         self.segment_length = 2
         self.stroke_linecap = "round"
         self.opacity = 1
@@ -205,14 +217,15 @@ class Brush(Pen):
         rev_intensity = abs(intensity - 1)
         segment_color = [int(rev_intensity * (255 - self.base_color[0])),
                          int(rev_intensity * (255 - self.base_color[1])),
-                         int(rev_intensity * (255 - self.base_color[2]))]
+                         int(rev_intensity * (255 - self.base_color[2])),
+                         self.base_color[3]]
 
-        return "rgb" + str(tuple(segment_color))
+        return "rgba" + str(tuple(segment_color))
 
 
 class Highlighter(Pen):
-    def __init__(self, base_width, base_color_id):
-        super().__init__("Highlighter", base_width, base_color_id)
+    def __init__(self, base_width, base_color):
+        super().__init__("Highlighter", base_width, base_color)
         self.stroke_linecap = "square"
         self.base_opacity = 0.3
         self.stroke_opacity = 0.2
@@ -220,29 +233,29 @@ class Highlighter(Pen):
 
 class Shader(Pen):
     
-    def __init__(self, base_width, base_color_id):
-        super().__init__("Shader", base_width, base_color_id)
+    def __init__(self, base_width, base_color):
+        super().__init__("Shader", base_width, base_color)
         self.stroke_linecap = "round"
         self.base_opacity = 0.1
         # self.stroke_opacity = 0.2
         self.name = "Shader"
 
 class Eraser(Pen):
-    def __init__(self, base_width, base_color_id):
-        super().__init__("Eraser", base_width * 2, base_color_id)
+    def __init__(self, base_width, base_color):
+        super().__init__("Eraser", base_width * 2, base_color)
         self.stroke_linecap = "square"
 
 
 class EraseArea(Pen):
-    def __init__(self, base_width, base_color_id):
-        super().__init__("Erase Area", base_width, base_color_id)
+    def __init__(self, base_width, base_color):
+        super().__init__("Erase Area", base_width, base_color)
         self.stroke_linecap = "square"
         self.base_opacity = 0
 
 
 class Calligraphy(Pen):
-    def __init__(self, base_width, base_color_id):
-        super().__init__("Calligraphy", base_width, base_color_id)
+    def __init__(self, base_width, base_color):
+        super().__init__("Calligraphy", base_width, base_color)
         self.segment_length = 2
 
     def get_segment_width(self, speed, direction, width, pressure, last_width):

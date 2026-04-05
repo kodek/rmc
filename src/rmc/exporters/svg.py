@@ -13,7 +13,7 @@ from rmscene import CrdtId, SceneTree, read_tree
 from rmscene import scene_items as si
 from rmscene.text import TextDocument
 
-from .writing_tools import Pen
+from .writing_tools import Pen, lookup_pen_color
 
 _logger = logging.getLogger(__name__)
 
@@ -206,7 +206,8 @@ def draw_stroke(item: si.Line, output):
                      f'color: {item.color.name} thickness_scale: {item.thickness_scale} -->\n')
 
     # initiate the pen
-    pen = Pen.create(item.tool.value, item.color.value, item.thickness_scale)
+    pen_color = lookup_pen_color(item.color.value, item.color_rgba)
+    pen = Pen.create(item.tool.value, pen_color, item.thickness_scale)
 
     last_xpos = -1.
     last_ypos = -1.
