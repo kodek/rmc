@@ -34,17 +34,17 @@ def print_root_text(root_text: si.Text, fout, anchor_ids):
                                              str(p),
                                              [char_id for s in p.contents for char_id in s.i])
         if p.style.value == si.ParagraphStyle.BULLET:
-            fout.write("- " + annotated_line)
+            fout.write("- " + annotated_line + "\n")
         elif p.style.value == si.ParagraphStyle.BULLET2:
-            fout.write("  + " + annotated_line)
+            fout.write("  + " + annotated_line + "\n")
         elif p.style.value == si.ParagraphStyle.BOLD:
-            fout.write("> " + annotated_line)
+            fout.write("> " + annotated_line + "\n")
         elif p.style.value == si.ParagraphStyle.HEADING:
-            fout.write("# " + annotated_line)
+            fout.write("# " + annotated_line + "\n")
         elif p.style.value == si.ParagraphStyle.PLAIN:
-            fout.write(annotated_line)
+            fout.write(annotated_line + "\n")
         else:
-            fout.write(("[unknown format %s] " % p.style.value) + annotated_line)
+            fout.write(("[unknown format %s] " % p.style.value) + annotated_line + "\n")
 
 
 def annotate_anchor_ids(anchor_ids, line, ids):
