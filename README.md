@@ -51,3 +51,7 @@ Right now the converter works well while there are no text boxes. If you add tex
 [@EelcovanVeldhuizen](https://github.com/EelcovanVeldhuizen) for code updates/fixes.
 
 [@p4xel](https://github.com/p4xel) for code fixes.
+
+[@Azeirah](https://github.com/Azeirah)
+
+[@darobin](https://github.com/darobin)
