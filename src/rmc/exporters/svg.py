@@ -115,22 +115,29 @@ def build_anchor_pos(text: tp.Optional[si.Text]) -> tp.Dict[CrdtId, int]:
 
     :param text: the root text of the remarkable file
     """
-    # Special anchors adjusted based on pen_size_test.strokes.rm
-    anchor_pos = {
-        CrdtId(0, 281474976710654): 100,
-        CrdtId(0, 281474976710655): 100,
-    }
+    anchor_pos = {}
 
     if text is not None:
         # Save anchor from text
         doc = TextDocument.from_scene_item(text)
         ypos = text.pos_y + TEXT_TOP_Y
+        top_of_text = ypos
         for i, p in enumerate(doc.contents):
             anchor_pos[p.start_id] = ypos
             for subp in p.contents:
                 for k in subp.i:
                     anchor_pos[k] = ypos  # TODO check these anchor are used
             ypos += LINE_HEIGHTS.get(p.style.value, 70)
+        bottom_of_text = ypos
+
+        # Special anchors: groups drawn at the top/bottom of the page,
+        # not anchored to any specific paragraph.
+        anchor_pos[CrdtId(0, 281474976710654)] = top_of_text
+        anchor_pos[CrdtId(0, 281474976710655)] = bottom_of_text
+    else:
+        # No text: fall back to fixed positions at top/bottom of screen
+        anchor_pos[CrdtId(0, 281474976710654)] = 0
+        anchor_pos[CrdtId(0, 281474976710655)] = SCREEN_HEIGHT
 
     return anchor_pos
 
